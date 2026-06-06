@@ -1,0 +1,131 @@
+@import "tailwindcss";
+/* Tailwind v4 không tự đọc tailwind.config.ts — nạp tường minh để các class
+   màu tùy biến (primary-600, ...) trong components hoạt động. */
+@config "../../tailwind.config.ts";
+
+:root {
+  --background: #fff7f9;   /* nền hồng phấn rất nhạt, ấm và sáng */
+  --foreground: #1f2937;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-noto-sans), var(--font-inter), system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans), var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* chữ cơ bản to hơn cho người lớn tuổi */
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+/* focus rõ ràng khi điều hướng bằng bàn phím */
+:focus-visible {
+  outline: 3px solid #f472b6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- Hero & brand (hồng tươi sáng) ---------- */
+.hero-gradient {
+  background:
+    radial-gradient(1100px 460px at 8% -10%, rgba(255, 255, 255, 0.45), transparent 60%),
+    radial-gradient(900px 420px at 95% 10%, rgba(253, 224, 71, 0.30), transparent 55%),
+    linear-gradient(118deg, #fda4af 0%, #f9a8d4 38%, #fbcfe8 72%, #fed7aa 100%);
+}
+
+.brand-gradient {
+  background: linear-gradient(120deg, #f472b6, #fb7185);
+}
+
+.text-brand-gradient {
+  background: linear-gradient(120deg, #ec4899, #fb7185);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- Surfaces ---------- */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.card-soft {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px -12px rgba(15, 23, 42, 0.12);
+}
+
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.05),
+    0 18px 36px -14px rgba(244, 114, 182, 0.35);
+}
+
+/* ---------- Chips (to, dễ bấm cho người lớn tuổi) ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 9999px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: 1.5px solid #fbcfe8;
+  background: #fff;
+  color: #44403c;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  min-height: 44px; /* chuẩn touch-target */
+}
+.chip:hover {
+  border-color: #f472b6;
+  color: #be185d;
+  background: #fdf2f8;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.45s ease both; }
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* legacy class names still referenced by old components */
+.vietnamese-text { font-family: var(--font-noto-sans), system-ui, sans-serif; }
+.vietnam-flag-gradient { background: linear-gradient(120deg, #f472b6, #fb7185); }
+.shadow-vietnam { box-shadow: 0 8px 24px -12px rgba(244, 114, 182, 0.35); }
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
