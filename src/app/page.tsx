@@ -2,14 +2,11 @@
 
 import React from 'react';
 import { Layout } from '@/components/layout';
-import { SystemStatus } from '@/components/features';
 import { useSearch } from '@/hooks/useSearch';
 import { TourismQuery } from '@/types/tourism';
 import {
   Search,
   MapPin,
-  Clock,
-  Sparkles,
   Navigation,
   Landmark,
   Trees,
@@ -118,11 +115,6 @@ export default function HomePage() {
       {/* ================= HERO ================= */}
       <section className="hero-gradient relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-28 text-center relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/60 border border-white/80 text-rose-900 text-xs font-medium backdrop-blur-sm mb-5">
-            <Sparkles className="h-3.5 w-3.5" />
-            PhoBERT · Knowledge Graph · Vector Search
-          </span>
-
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-rose-950 drop-shadow-sm">
             Khám phá Việt Nam
           </h1>
@@ -230,11 +222,6 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-
-        {/* Trạng thái hệ thống */}
-        <div className="mt-4">
-          <SystemStatus />
-        </div>
       </section>
 
       {/* ================= RESULTS ================= */}
@@ -266,17 +253,6 @@ export default function HomePage() {
                   <MapPin className="h-4 w-4 text-pink-500" />
                   <b>{results.total}</b>&nbsp;kết quả
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-pink-500" />
-                  {(results.processing_time * 1000).toFixed(0)} ms
-                </span>
-                {results.intent_info && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-violet-50 border border-violet-200 text-violet-700 text-xs font-medium">
-                    <Sparkles className="h-3 w-3" />
-                    {results.intent_info.predicted_intent}
-                    &nbsp;·&nbsp;{(results.intent_info.confidence * 100).toFixed(0)}%
-                  </span>
-                )}
                 <button
                   onClick={clearResults}
                   className="ml-auto inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600"
@@ -295,29 +271,79 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-slate-900">Địa giới hành chính sau sáp nhập</p>
-                    <p className="text-xs text-slate-400">Truy vấn từ Knowledge Graph (Neo4j)</p>
                   </div>
                 </div>
-                <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4 space-y-1.5">
-                  {results.results.map((r, i) => (
-                    <p
-                      key={i}
-                      className={`text-[17px] leading-relaxed ${
-                        i === 0 ? 'font-semibold text-slate-900' : 'text-slate-700'
-                      } ${
-                        r.name.startsWith('├') || r.name.startsWith('└') || r.name.startsWith(' ')
-                          ? 'pl-2 font-mono text-sm'
-                          : ''
-                      }`}
-                    >
-                      {r.name}
-                      {i === 0 && r.province && (
-                        <span className="ml-2 text-xs font-normal text-slate-400">
-                          {r.ward} · {r.province}
-                        </span>
-                      )}
-                    </p>
-                  ))}
+                <div className="space-y-3">
+                  {(() => {
+                    // Gom các dòng thường liên tiếp vào 1 khối; mỗi dòng "Trước đây gồm:" là 1 khối chip riêng
+                    type Block =
+                      | { kind: 'old_names'; ward: string; items: string[] }
+                      | { kind: 'lines'; lines: { name: string; ward?: string; province?: string; idx: number }[] };
+                    const blocks: Block[] = [];
+                    results.results.forEach((r, i) => {
+                      if (r.name.startsWith('Trước đây gồm:')) {
+                        const items = r.name
+                          .replace('Trước đây gồm:', '')
+                          .split(',')
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                        blocks.push({ kind: 'old_names', ward: r.ward || '', items });
+                      } else {
+                        const last = blocks[blocks.length - 1];
+                        const line = { name: r.name, ward: r.ward, province: r.province, idx: i };
+                        if (last?.kind === 'lines') last.lines.push(line);
+                        else blocks.push({ kind: 'lines', lines: [line] });
+                      }
+                    });
+                    return blocks.map((b, bi) =>
+                      b.kind === 'old_names' ? (
+                        <div key={bi} className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                            {b.items.length} đơn vị cũ
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {b.items.map((it, j) => (
+                              <span
+                                key={j}
+                                className="inline-flex items-center px-2.5 py-1 rounded-full bg-white border border-slate-200 text-sm text-slate-700"
+                              >
+                                {it}
+                              </span>
+                            ))}
+                          </div>
+                          {b.ward && (
+                            <p className="mt-3 pt-3 border-t border-slate-200/70 text-[17px] font-semibold text-slate-900">
+                              <span className="text-pink-500 mr-1.5">→</span>
+                              {b.ward}
+                              <span className="ml-2 text-xs font-normal text-slate-400">tên mới</span>
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div key={bi} className="rounded-2xl bg-slate-50 border border-slate-100 p-4 space-y-1.5">
+                          {b.lines.map((l) => (
+                            <p
+                              key={l.idx}
+                              className={`text-[17px] leading-relaxed ${
+                                l.idx === 0 ? 'font-semibold text-slate-900' : 'text-slate-700'
+                              } ${
+                                l.name.startsWith('├') || l.name.startsWith('└') || l.name.startsWith(' ')
+                                  ? 'pl-2 font-mono text-sm'
+                                  : ''
+                              }`}
+                            >
+                              {l.name}
+                              {l.idx === 0 && l.province && (
+                                <span className="ml-2 text-xs font-normal text-slate-400">
+                                  {l.ward} · {l.province}
+                                </span>
+                              )}
+                            </p>
+                          ))}
+                        </div>
+                      )
+                    );
+                  })()}
                 </div>
               </div>
             )}

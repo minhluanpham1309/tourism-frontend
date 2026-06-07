@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Github, BookOpen } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 interface HeaderProps {
   title?: string;
@@ -22,33 +22,6 @@ export const Header: React.FC<HeaderProps> = ({ title = 'RAG Tourism Việt Nam'
               </p>
             </div>
           </a>
-
-          {/* Right side */}
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 mr-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-soft" />
-              <span className="text-xs font-medium text-emerald-700">Hệ thống hoạt động</span>
-            </div>
-
-            <a
-              href={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/docs`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
-            >
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden md:inline">API Docs</span>
-            </a>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <Github className="h-4 w-4" />
-              <span className="hidden md:inline">GitHub</span>
-            </a>
-          </div>
         </div>
       </div>
     </header>
