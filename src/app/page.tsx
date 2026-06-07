@@ -8,10 +8,6 @@ import {
   Search,
   MapPin,
   Navigation,
-  Landmark,
-  Trees,
-  UtensilsCrossed,
-  ScrollText,
   Globe,
   X,
   Building2,
@@ -81,32 +77,6 @@ export default function HomePage() {
     e.preventDefault();
     await runSearch(queryText);
   };
-
-  const pickSuggestion = (q: string) => {
-    setQueryText(q);
-    void runSearch(q);
-  };
-
-  const adminQueries = [
-    'Phường Trấn Biên được gộp từ những phường nào?',
-    'Xã Thạnh Phú mới tên là gì?',
-    'Phường Linh Tây tên mới là gì?',
-  ];
-
-  const tourismGroups = [
-    {
-      icon: <Landmark className="h-3.5 w-3.5" />,
-      queries: ['Nhà thờ cổ kính ở Biên Hòa', 'Đền thờ và miếu mạo truyền thống'],
-    },
-    {
-      icon: <Trees className="h-3.5 w-3.5" />,
-      queries: ['Thác nước đẹp ở Đồng Nai', 'Khu du lịch sinh thái rừng tre'],
-    },
-    {
-      icon: <UtensilsCrossed className="h-3.5 w-3.5" />,
-      queries: ['Chợ truyền thống ở Xuân Lộc', 'Quán cà phê view đẹp Biên Hòa'],
-    },
-  ];
 
   const isAdminResult = results?.search_method === 'administrative_focused';
 
@@ -193,33 +163,6 @@ export default function HomePage() {
             {micError && <p className="text-sm text-rose-600 text-center max-w-md">{micError}</p>}
           </div>
 
-          {/* Gợi ý nhanh */}
-          <div className="mt-5 space-y-3">
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide inline-flex items-center gap-1">
-                <ScrollText className="h-3.5 w-3.5" /> Hành chính
-              </span>
-              {adminQueries.map((q) => (
-                <button key={q} type="button" className="chip" onClick={() => pickSuggestion(q)}>
-                  {q}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide inline-flex items-center gap-1">
-                <Globe className="h-3.5 w-3.5" /> Du lịch
-              </span>
-              {tourismGroups.flatMap((g) =>
-                g.queries.map((q) => (
-                  <button key={q} type="button" className="chip" onClick={() => pickSuggestion(q)}>
-                    {g.icon}
-                    {q}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
         </div>
       </section>
 
