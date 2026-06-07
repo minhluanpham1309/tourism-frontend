@@ -116,11 +116,10 @@ export default function HomePage() {
       <section className="hero-gradient relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-28 text-center relative z-10">
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-rose-950 drop-shadow-sm">
-            Khám phá Việt Nam
+            Khám phá miền Nam
           </h1>
           <p className="mt-4 text-lg text-rose-900/80 max-w-2xl mx-auto">
-            Hỏi bằng ngôn ngữ tự nhiên — từ địa điểm du lịch đến
-            địa giới hành chính sau sáp nhập 2025.
+            Hỏi đáp địa giới hành chính và gợi ý du lịch miền Nam sau sáp nhập 1-7-2025
           </p>
         </div>
 

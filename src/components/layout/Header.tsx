@@ -5,7 +5,7 @@ interface HeaderProps {
   title?: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({ title = 'RAG Tourism Việt Nam' }) => {
+export const Header: React.FC<HeaderProps> = ({ title = 'Du lịch miền Nam' }) => {
   return (
     <header className="glass-effect sticky top-0 z-50 border-b border-slate-200/70">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

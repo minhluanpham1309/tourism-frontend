@@ -17,9 +17,9 @@ const notoSans = Noto_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'RAG Tourism Recommender',
-  description: 'AI-powered tourism recommendations for Vietnam using Knowledge Graph and Vector Search',
-  keywords: ['tourism', 'vietnam', 'AI', 'recommendations', 'travel', 'knowledge graph', 'vector search'],
+  title: 'Du lịch miền Nam',
+  description: 'Hỏi đáp địa giới hành chính và gợi ý du lịch miền Nam sau sáp nhập 1-7-2025',
+  keywords: ['du lịch', 'miền nam', 'AI', 'gợi ý', 'travel', 'sáp nhập 2025'],
   authors: [{ name: 'RAG Tourism Team' }],
 };
 
