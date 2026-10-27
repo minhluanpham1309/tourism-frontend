@@ -12,11 +12,11 @@ import {
 } from '@/types/tourism';
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') || 'http://localhost:8000';
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') || 'https://minhluanpham1309--tourism-api-fastapi-app.us-east.modal.run';
 
 const client: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 60_000, // first query can be slow (model warm-up)
+  timeout: 300_000, // Modal cold start ~2 phút (nạp model) nên để 5 phút
   headers: { 'Content-Type': 'application/json' },
 });
 
