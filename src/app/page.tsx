@@ -104,9 +104,34 @@ export default function HomePage() {
     return loc.confidence >= 0.7;
   };
 
+  // Câu hỏi mẫu cho người mới — bấm là hỏi luôn
+  const EXAMPLES = [
+    'Phường Bến Nghé tên mới là gì?',
+    'Phường Trấn Biên gồm những phường nào?',
+    'Bình Dương sáp nhập vào đâu?',
+    'Khách sạn ở Quận 1',
+    'Nhà hàng hải sản Vũng Tàu',
+    'Điểm du lịch Đồng Nai',
+  ];
+
+  // Gợi ý từ hệ thống (hỏi lại khi trùng tên / sửa chính tả / không có dữ liệu) — ưu tiên hơn gợi ý chung
+  const serverSuggestions: string[] = results?.suggestions ?? [];
+  const suggestionTitle = (() => {
+    const m = results?.search_method || '';
+    if (m === 'administrative_not_found') return 'Có phải bạn muốn hỏi:';
+    if (isAdminResult) return 'Chọn đúng nơi bạn muốn hỏi:';
+    return 'Bạn thử hỏi:';
+  })();
+
+  const ask = (q: string) => {
+    setQueryText(q);
+    void runSearch(q);
+  };
+
   // Gợi ý câu hỏi tiếp theo (dùng ngữ cảnh hội thoại)
   const followUps: string[] = (() => {
     if (!results || results.results.length === 0) return [];
+    if (serverSuggestions.length > 0) return [];
     const m = results.search_method;
     if (isAdminResult || m === 'statistics' || m === 'out_of_scope') return [];
     const first = results.results[0];
@@ -308,6 +333,25 @@ export default function HomePage() {
             {micError && <p className="text-sm text-rose-600 text-center max-w-md">{micError}</p>}
           </div>
 
+          {/* Câu hỏi mẫu — chỉ hiện khi chưa hỏi gì */}
+          {!results && !isLoading && (
+            <div className="mt-5 pt-5 border-t border-slate-100">
+              <p className="text-sm text-slate-500 text-center mb-3">Chưa biết hỏi gì? Bấm thử một câu:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {EXAMPLES.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => ask(q)}
+                    className="inline-flex items-center px-4 h-11 rounded-full bg-white border border-slate-200 text-slate-700 text-[15px] hover:border-pink-300 hover:text-pink-700 hover:bg-pink-50"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Ngữ cảnh hội thoại: câu tiếp theo sẽ được hiểu nối tiếp câu trước */}
           {context?.query && (
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
@@ -386,9 +430,28 @@ export default function HomePage() {
                       {results.answer_source?.startsWith('llm')
                         ? 'Câu trả lời do AI tổng hợp từ dữ liệu hệ thống'
                         : 'Tổng hợp từ dữ liệu hệ thống'}
+                      {results.cached && ' · trả lời nhanh từ bộ nhớ đệm'}
                     </p>
                   </div>
                 </div>
+                {serverSuggestions.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-pink-100">
+                    <p className="text-sm font-medium text-slate-600 mb-2">{suggestionTitle}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {serverSuggestions.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={isLoading}
+                          onClick={() => ask(s)}
+                          className="inline-flex items-center px-4 h-11 rounded-full bg-pink-600 text-white text-[15px] font-medium hover:bg-pink-700 disabled:opacity-40"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {followUps.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-pink-100 flex flex-wrap gap-2">
                     {followUps.map((f) => (

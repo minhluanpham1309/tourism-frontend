@@ -55,6 +55,9 @@ export interface SearchResponse {
   answer_source?: string | null;
   effective_query?: string | null;
   context?: ConversationContext | null;
+  // câu hỏi gợi ý bấm được (hỏi lại khi trùng tên, "có phải bạn muốn hỏi", không có dữ liệu...)
+  suggestions?: string[];
+  cached?: boolean;
 }
 
 export interface ApiError {
