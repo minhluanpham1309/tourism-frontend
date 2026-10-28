@@ -9,6 +9,7 @@ import {
   HealthStatus,
   SystemStats,
   ApiError,
+  ConversationContext,
 } from '@/types/tourism';
 
 const API_BASE_URL =
@@ -44,14 +45,19 @@ export class TourismApiService {
   }
 
   /** POST /stt/search — voice query: audio → PhoWhisper transcribe → search. */
-  static async searchByVoice(audio: Blob, filename = 'voice.webm'): Promise<SearchResponse> {
+  static async searchByVoice(
+    audio: Blob,
+    filename = 'voice.webm',
+    context?: ConversationContext | null
+  ): Promise<SearchResponse> {
     try {
       const form = new FormData();
       form.append('audio_file', audio, filename);
       form.append('use_vector_search', 'true');
+      if (context) form.append('context', JSON.stringify(context));
       const { data } = await client.post<SearchResponse>('/stt/search', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 120_000, // STT trên CPU có thể chậm
+        timeout: 300_000, // cold start + STT trên CPU có thể chậm
       });
       return data;
     } catch (err) {

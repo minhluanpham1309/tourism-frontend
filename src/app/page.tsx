@@ -15,11 +15,21 @@ import {
   Square,
   CheckCircle2,
   Lightbulb,
+  MessageCircle,
+  Phone,
+  Clock,
+  RotateCcw,
+  CornerDownRight,
 } from 'lucide-react';
 
 export default function HomePage() {
-  const { results, isLoading, error, search, searchByVoice, clearResults } = useSearch();
+  const { results, isLoading, error, context, search, searchByVoice, clearResults } = useSearch();
   const [queryText, setQueryText] = React.useState('');
+
+  const startNewQuestion = () => {
+    clearResults();
+    setQueryText('');
+  };
 
   // ---- Voice search (MediaRecorder -> /stt/search) ----
   const [isRecording, setIsRecording] = React.useState(false);
@@ -86,14 +96,27 @@ export default function HomePage() {
   const isExact = (loc: TourismLocation) => {
     const s = (loc.source || '').toLowerCase();
     if (
-      s.startsWith('kg_ward_match') ||
-      s.startsWith('kg_search') ||
+      s.startsWith('kg_') ||
       s.startsWith('administrative') ||
       s.startsWith('province')
     )
       return true;
     return loc.confidence >= 0.7;
   };
+
+  // Gợi ý câu hỏi tiếp theo (dùng ngữ cảnh hội thoại)
+  const followUps: string[] = (() => {
+    if (!results || results.results.length === 0) return [];
+    const m = results.search_method;
+    if (isAdminResult || m === 'statistics' || m === 'out_of_scope') return [];
+    const first = results.results[0];
+    const cat = (first?.category || '').toLowerCase();
+    const list = ['Còn chỗ nào khác không?', 'Chỗ đầu tiên ở đâu?', 'Chỗ đầu tiên mở cửa mấy giờ?'];
+    if (cat.includes('khách sạn')) list.push('Nhà hàng thì sao?', 'Quán ăn gần chỗ đầu tiên');
+    else if (cat.includes('nhà hàng')) list.push('Khách sạn thì sao?');
+    else list.push('Khách sạn gần chỗ đầu tiên');
+    return list;
+  })();
 
   const exactResults = results ? results.results.filter(isExact) : [];
   const relatedResults = results ? results.results.filter((r) => !isExact(r)) : [];
@@ -113,6 +136,51 @@ export default function HomePage() {
               {[loc.ward, loc.province].filter(Boolean).join(', ') || 'miền Nam'}
             </span>
           </p>
+          {(loc.category || loc.distance_km != null) && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {loc.category && loc.category !== 'Thống kê' && (
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                    /khách sạn/i.test(loc.category)
+                      ? 'bg-sky-50 text-sky-700 border-sky-200'
+                      : /nhà hàng/i.test(loc.category)
+                      ? 'bg-orange-50 text-orange-700 border-orange-200'
+                      : 'bg-pink-50 text-pink-700 border-pink-200'
+                  }`}
+                >
+                  {/khách sạn/i.test(loc.category) ? '🏨 ' : /nhà hàng/i.test(loc.category) ? '🍜 ' : '📍 '}
+                  {loc.category}
+                </span>
+              )}
+              {loc.distance_km != null && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                  cách {loc.distance_km < 1 ? `${Math.round(loc.distance_km * 1000)} m` : `${loc.distance_km} km`}
+                </span>
+              )}
+            </div>
+          )}
+          {(loc.address || loc.phone || loc.opening_hours) && (
+            <div className="mt-2 space-y-1 text-[15px] text-slate-700">
+              {loc.address && (
+                <p className="flex items-start gap-1.5">
+                  <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-slate-400" /> {loc.address}
+                </p>
+              )}
+              {loc.phone && (
+                <p className="flex items-center gap-1.5">
+                  <Phone className="h-4 w-4 shrink-0 text-slate-400" />
+                  <a href={`tel:${loc.phone.replace(/\s/g, '')}`} className="text-pink-600 hover:underline">
+                    {loc.phone}
+                  </a>
+                </p>
+              )}
+              {loc.opening_hours && (
+                <p className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 shrink-0 text-slate-400" /> {loc.opening_hours}
+                </p>
+              )}
+            </div>
+          )}
         </div>
         <span
           className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
@@ -240,6 +308,22 @@ export default function HomePage() {
             {micError && <p className="text-sm text-rose-600 text-center max-w-md">{micError}</p>}
           </div>
 
+          {/* Ngữ cảnh hội thoại: câu tiếp theo sẽ được hiểu nối tiếp câu trước */}
+          {context?.query && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-50 border border-pink-200 text-pink-700">
+                <MessageCircle className="h-4 w-4" />
+                Đang hỏi tiếp về: <b className="font-semibold">“{context.query}”</b>
+              </span>
+              <button
+                type="button"
+                onClick={startNewQuestion}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
+              >
+                <RotateCcw className="h-4 w-4" /> Câu hỏi mới
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -273,13 +357,58 @@ export default function HomePage() {
                   <b>{results.total}</b>&nbsp;kết quả
                 </span>
                 <button
-                  onClick={clearResults}
+                  onClick={startNewQuestion}
                   className="ml-auto inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600"
                 >
                   <X className="h-3.5 w-3.5" /> Xóa
                 </button>
               </div>
+              {results.effective_query && (
+                <p className="mt-2 text-sm text-slate-500 inline-flex items-center gap-1.5">
+                  <CornerDownRight className="h-4 w-4 text-pink-400" />
+                  Hiểu là: <span className="font-medium text-slate-700">“{results.effective_query}”</span>
+                </p>
+              )}
             </div>
+
+            {/* Câu trả lời tổng hợp (bước Generation của RAG) */}
+            {results.answer && (
+              <div className="rounded-3xl border border-pink-200 bg-gradient-to-br from-pink-50 to-white p-6 animate-fade-up">
+                <div className="flex items-start gap-3">
+                  <div className="brand-gradient w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+                    <MessageCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[18px] leading-relaxed text-slate-800 whitespace-pre-line">
+                      {results.answer}
+                    </p>
+                    <p className="mt-2 text-xs text-slate-400">
+                      {results.answer_source?.startsWith('llm')
+                        ? 'Câu trả lời do AI tổng hợp từ dữ liệu hệ thống'
+                        : 'Tổng hợp từ dữ liệu hệ thống'}
+                    </p>
+                  </div>
+                </div>
+                {followUps.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-pink-100 flex flex-wrap gap-2">
+                    {followUps.map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => {
+                          setQueryText(f);
+                          void runSearch(f);
+                        }}
+                        className="inline-flex items-center px-4 h-11 rounded-full bg-white border border-pink-200 text-pink-700 text-[15px] font-medium hover:bg-pink-50 disabled:opacity-40"
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ADMIN answer panel (kết quả dạng cây) */}
             {isAdminResult && results.results.length > 0 && (
@@ -404,8 +533,8 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Empty state */}
-            {results.results.length === 0 && (
+            {/* Empty state (khi đã có câu trả lời giải thích thì không cần) */}
+            {results.results.length === 0 && !results.answer && (
               <div className="card-soft rounded-3xl py-14 text-center animate-fade-up">
                 <Search className="h-10 w-10 mx-auto mb-3 text-slate-300" />
                 <p className="text-slate-700 font-medium">Không tìm thấy kết quả</p>

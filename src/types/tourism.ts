@@ -1,12 +1,28 @@
 // Types for the Tourism API
 export interface TourismLocation {
   name: string;
-  lat?: number;
-  lng?: number;
+  lat?: number | null;
+  lng?: number | null;
   ward: string;
   province: string;
   confidence: number;
   source: string;
+  category?: string | null;
+  // chi tiết (có khi hỏi giờ mở cửa / SĐT / "gần X")
+  address?: string | null;
+  phone?: string | null;
+  opening_hours?: string | null;
+  description?: string | null;
+  distance_km?: number | null;
+}
+
+/** Ngữ cảnh hội thoại — backend trả về, FE gửi lại nguyên vẹn ở lượt sau. */
+export interface ConversationContext {
+  query: string;
+  location?: string | null;
+  category?: string | null;
+  results?: string[];
+  shown?: string[];
 }
 
 export interface TourismQuery {
@@ -14,6 +30,9 @@ export interface TourismQuery {
   location?: string;
   category?: string;
   use_vector_search: boolean;
+  context?: ConversationContext | null;
+  limit?: number;
+  generate_answer?: boolean;
 }
 
 export interface IntentInfo {
@@ -31,6 +50,11 @@ export interface SearchResponse {
   processing_time: number;
   search_method: string;
   intent_info?: IntentInfo;
+  // RAG generation + hội thoại
+  answer?: string | null;
+  answer_source?: string | null;
+  effective_query?: string | null;
+  context?: ConversationContext | null;
 }
 
 export interface ApiError {
